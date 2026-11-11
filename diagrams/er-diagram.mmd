@@ -1,0 +1,114 @@
+---
+title: NEXORA | Entity Relationship Diagram
+---
+%%{init: {"theme":"base","themeVariables":{"background":"#08111f","primaryColor":"#14243a","primaryTextColor":"#f1f5f9","primaryBorderColor":"#60a5fa","lineColor":"#94a3b8","secondaryColor":"#102d35","tertiaryColor":"#1b1b37","fontFamily":"Inter, Segoe UI, Arial","fontSize":"14px","er":{"entityPadding":12,"fontSize":14,"attributeFontSize":12,"relationshipLineColor":"#94a3b8","entityBorder":"#60a5fa","entityBkg":"#13243a","attributeBackgroundColorOdd":"#102033","attributeBackgroundColorEven":"#152941"}}}}%%
+erDiagram
+    users {
+        INT id PK
+        VARCHAR username UK
+        VARCHAR email UK
+        VARCHAR password_hash
+        VARCHAR full_name
+        VARCHAR profile_pic
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    stocks {
+        INT id PK
+        VARCHAR symbol UK
+        VARCHAR company_name
+        VARCHAR exchange
+        VARCHAR sector
+        VARCHAR industry
+        VARCHAR currency
+        BOOLEAN is_active
+        TIMESTAMP created_at
+    }
+    stock_history {
+        BIGINT id PK
+        VARCHAR symbol "logical symbol; not FK"
+        DATE trade_date
+        DECIMAL open_price
+        DECIMAL high_price
+        DECIMAL low_price
+        DECIMAL close_price
+        BIGINT volume
+        TIMESTAMP created_at
+    }
+    user_settings {
+        INT id PK
+        INT user_id FK,UK
+        VARCHAR theme
+        VARCHAR currency
+        BOOLEAN email_notifications
+        BOOLEAN prediction_alerts
+        VARCHAR dashboard_layout
+        TIMESTAMP updated_at
+    }
+    watchlist {
+        INT id PK
+        INT user_id FK
+        VARCHAR symbol "logical symbol; not FK"
+        TIMESTAMP added_at
+    }
+    portfolio {
+        INT id PK
+        INT user_id FK
+        VARCHAR symbol "logical symbol; not FK"
+        DECIMAL quantity
+        DECIMAL avg_buy_price
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    portfolio_transactions {
+        INT id PK
+        INT user_id FK
+        VARCHAR symbol "logical symbol; not FK"
+        ENUM transaction_type
+        DECIMAL quantity
+        DECIMAL price
+        DECIMAL total_amount
+        TIMESTAMP transaction_date
+    }
+    predictions {
+        INT id PK
+        INT user_id FK "nullable; ON DELETE SET NULL"
+        VARCHAR symbol "logical symbol; not FK"
+        DECIMAL current_price
+        DECIMAL predicted_price
+        DECIMAL predicted_change_pct
+        INT prediction_horizon_days
+        DATE target_date
+        DECIMAL rmse
+        DECIMAL mae
+        DECIMAL mape
+        VARCHAR model_version
+        TIMESTAMP created_at
+    }
+    prediction_history {
+        INT id PK
+        INT prediction_id FK
+        DECIMAL actual_price
+        DATE evaluation_date
+        DECIMAL error_abs
+        DECIMAL error_pct
+        BOOLEAN is_evaluated
+        TIMESTAMP updated_at
+    }
+    notifications {
+        INT id PK
+        INT user_id FK
+        VARCHAR title
+        TEXT message
+        ENUM type
+        BOOLEAN is_read
+        TIMESTAMP created_at
+    }
+
+    users ||--o| user_settings : "has settings"
+    users ||--o{ watchlist : "owns"
+    users ||--o{ portfolio : "holds"
+    users ||--o{ portfolio_transactions : "records"
+    users o|--o{ predictions : "requests (user_id nullable)"
+    predictions ||--o{ prediction_history : "evaluated as"
+    users ||--o{ notifications : "receives"

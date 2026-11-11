@@ -1,0 +1,45 @@
+---
+title: NEXORA | System Flow
+---
+%%{init: {"theme":"base","themeVariables":{"background":"#08111f","primaryColor":"#14243a","primaryTextColor":"#f1f5f9","primaryBorderColor":"#60a5fa","lineColor":"#94a3b8","secondaryColor":"#102d35","tertiaryColor":"#1b1b37","fontFamily":"Inter, Segoe UI, Arial","fontSize":"16px"}}}%%
+flowchart LR
+    classDef client fill:#10243b,stroke:#60a5fa,color:#f8fafc,stroke-width:2px
+    classDef php fill:#172554,stroke:#818cf8,color:#f8fafc,stroke-width:2px
+    classDef db fill:#102d35,stroke:#2dd4bf,color:#f8fafc,stroke-width:2px
+    classDef ml fill:#1d233e,stroke:#a78bfa,color:#f8fafc,stroke-width:2px
+    classDef external fill:#332713,stroke:#fbbf24,color:#fff7ed,stroke-width:2px
+    classDef note fill:#151e2d,stroke:#64748b,color:#cbd5e1,stroke-width:1px
+
+    U(["User<br/>Sign in • explore • analyze<br/>watchlist • virtual portfolio"])
+    B["Browser UI<br/>PHP pages • Bootstrap 5<br/>Chart.js visualizations"]
+    P["PHP application<br/>Sessions • auth • page actions<br/>AJAX endpoints"]
+    X["Stock API proxy<br/>Quotes • history • indicators<br/>prediction request"]
+    D[("MySQL · nexora_db<br/>Users • settings • stocks<br/>watchlists • portfolio • predictions")]
+    F["Flask REST API<br/>/predict • /model-info<br/>/historical-performance • /health"]
+    M["Prediction pipeline<br/>LSTM • MinMaxScaler<br/>7-day forecast"]
+    Y["Yahoo Finance<br/>Historical OHLCV"]
+    R["Response to dashboard<br/>Quote • indicators<br/>forecast • model metrics"]
+    FB["Fallback prediction<br/>PHP embedded calculation<br/>when Flask is unavailable"]
+    N["Note: quote/history proxy responses can use generated baseline series;<br/>the ML service fetches market data through yfinance."]
+
+    U -->|browser interaction| B
+    B -->|page / AJAX request| P
+    P <-->|account & app data| D
+    P -->|market / prediction action| X
+    X -->|GET /predict?ticker=...&days=7| F
+    F --> M
+    M -->|fetch history| Y
+    Y -->|OHLCV series| M
+    M -->|forecast result| F
+    F -->|prediction JSON| X
+    X -->|Flask unavailable| FB
+    FB --> R
+    X -->|quote / history / prediction JSON| R
+    R -->|render charts & values| B
+
+    class U,B client
+    class P,X php
+    class D db
+    class F,M ml
+    class Y external
+    class R,FB,N note
